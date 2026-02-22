@@ -1,10 +1,12 @@
 import { useState } from "react";
 
+let rawId: ArrayBuffer | null = null;
+
 function App() {
   const [email, setEmail] = useState("");
-  // const [isLoading, setIsLoading] = useState(false);
+
   const signup = async () => {
-    const data = await navigator.credentials.create({
+    const data = (await navigator.credentials.create({
       publicKey: {
         challenge: new Uint8Array([0, 1, 2, 3, 4, 5, 6]),
         rp: {
@@ -32,12 +34,25 @@ function App() {
           // },
         ],
       },
-    });
-    console.log(data);
+    })) as PublicKeyCredential;
+
+    rawId = data.rawId;
+
+    console.log(data, rawId);
   };
 
-  const login = () => {
+  const login = async () => {
     console.log("login", email);
+    const data = await navigator.credentials.get({
+      publicKey: {
+        challenge: new Uint8Array([0, 1, 2, 3, 4, 5, 6]),
+        allowCredentials: [
+          { type: 'public-key', id: rawId! },
+        ],
+        rpId: location.host,
+      }
+    })
+    console.log(data)
   };
 
   return (
